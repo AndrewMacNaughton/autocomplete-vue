@@ -1,12 +1,10 @@
 <style lang="sass">
-    .autocomplete {
+   .autocomplete {
         position: relative;
-
         input {
             width: 100%;
         }
     }
-
     .autocomplete__suggestions {
         position: absolute;
         top: 100%;
@@ -14,14 +12,12 @@
         width: 100%;
         z-index: 2;
     }
-
     .autocomplete__entry {
         &:hover {
             background-color: #f7f7f9;
             cursor: default;
         }
     }
-
     .autocomplete__selected {
         background-color: darken(#f7f7f9, 5%);
     }
@@ -47,7 +43,6 @@
         </div>
     </div>
 </template>
-
 <script>
 import { autocompleteBus } from "./autocompleteBus.js";
 
@@ -75,8 +70,9 @@ export default {
             );
           }
           return entry[this.property].indexOf(this.search) > -1;
-        });
-      }
+        }).slice(0,this.limit);
+        
+        }      
     },
     hasSuggestions() {
       if (this.search.length <= this.threshold) {
@@ -111,7 +107,6 @@ export default {
         this.search = this.filteredEntries[index][this.property];
         autocompleteBus.$emit("autocomplete-select", this.search);
         this.$emit("selected", this.search);
-
         if (this.autoHide) {
           this.mousefocus = false;
           this.focused = false;
@@ -208,6 +203,11 @@ export default {
       type: Boolean,
       required: false,
       default: true
+    },
+    limit:{
+      type: Number,
+      required: false,
+      default: 20
     }
   },
   watch: {
