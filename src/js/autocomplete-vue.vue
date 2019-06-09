@@ -38,7 +38,7 @@
             <div v-for="(entry, index) in filteredEntries"
                 @click="select(index)"
                 :class="[classPrefix + '__entry', selectedClass(index)]">
-                {{ entry[property] }}
+                {{ entry[matchedProperty] }}
             </div>
         </div>
     </div>
@@ -53,7 +53,9 @@ export default {
       search: "",
       focused: false,
       mousefocus: false,
-      selectedIndex: 0
+      selectedIndex: 0,
+      properties:[],
+      matchedProperty:null
     };
   },
   computed: {
@@ -64,12 +66,21 @@ export default {
         return this.entries.filter(entry => {
           if (this.ignoreCase) {
             return (
-              entry[this.property]
-                .toLowerCase()
-                .indexOf(this.search.toLowerCase()) > -1
+              this.properties.find(prop=>{
+                this.matchedProperty=prop
+                return entry[prop]
+                  .toLowerCase()
+                  .indexOf(this.search.toLowerCase())> -1                
+              })              
             );
           }
-          return entry[this.property].indexOf(this.search) > -1;
+                   
+          return (
+            this.properties.find((prop)=>{
+                this.matchedProperty=prop
+                return entry[prop].indexOf(this.search)> -1                
+            })
+          )              
         }).slice(0,this.limit);
         
         }      
@@ -101,10 +112,13 @@ export default {
       this.getListAjax();
     }
   },
+  mounted(){
+    this.properties = !Array.isArray(this.property) ? [this.property] : this.property
+  },
   methods: {
     select(index) {
       if (this.hasSuggestions) {
-        this.search = this.filteredEntries[index][this.property];
+        this.search = this.filteredEntries[index][this.matchedProperty];
         autocompleteBus.$emit("autocomplete-select", this.search);
         this.$emit("selected", this.search);
         if (this.autoHide) {
@@ -172,7 +186,7 @@ export default {
       required: false
     },
     property: {
-      type: String,
+      type: String | Array,
       required: false,
       default: "name"
     },
