@@ -31,7 +31,7 @@
             @keydown.up.prevent.stop="moveUp()"
             @keydown.enter.prevent.stop="select(selectedIndex)"
             @keydown.tab="mousefocus = false"
-            :value="value"
+           
             ref="input"
             :required="required">
         <div v-if="showSuggestions" :class="classPrefix + '__suggestions'">
@@ -67,18 +67,20 @@ export default {
           if (this.ignoreCase) {
             return (
               this.properties.find(prop=>{
-                this.matchedProperty=prop
-                return entry[prop]
-                  .toLowerCase()
-                  .indexOf(this.search.toLowerCase())> -1                
+                if(entry[prop].toLowerCase().indexOf(this.search.toLowerCase())> -1){
+                  this.matchedProperty = prop
+                  return true 
+                }                
               })              
             );
           }
                    
           return (
             this.properties.find((prop)=>{
-                this.matchedProperty=prop
-                return entry[prop].indexOf(this.search)> -1                
+                if(entry[prop].indexOf(this.search)> -1){
+                  this.matchedProperty = prop
+                  return true 
+                }               
             })
           )              
         }).slice(0,this.limit);
@@ -220,8 +222,7 @@ export default {
     },
     limit:{
       type: Number,
-      required: false,
-      default: 20
+      required: false      
     }
   },
   watch: {
