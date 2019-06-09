@@ -191,7 +191,38 @@ describe("Autocomplete", () => {
     expect(component.mousefocus).to.be.true;
   });
 });
-
+it("should set limit",()=>{
+  const vm = setup(
+    ':limit="0" ref="autocomplete" :list="[{name: \'test\'}]"'
+  )
+  const component = vm.$refs.autocomplete;
+  component.search = "test";
+  expect(component.filteredEntries.length).to.equal(0);
+})
+it("should set accept an array of properties on property",()=>{
+  const vm = setup(
+    ':property="[\'prop1\',\'prop2\']" ref="autocomplete" :list="[{name: \'test\'}]"'
+  );
+  const component = vm.$refs.autocomplete;
+  expect(component.properties.length).to.equal(2);
+})
+it("should accept a property as a string and convert to Array",()=>{
+  const vm = setup(
+    'property="prop1" ref="autocomplete" :list="[{name: \'test\'}]"'
+  );
+  const component = vm.$refs.autocomplete;
+  expect(component.properties.length).to.equal(1);
+})
+it("should match on any property",()=>{
+  const vm = setup(
+    ':property="[\'prop1\',\'prop2\']" ref="autocomplete" :list="[{prop1: \'test\',prop2: \'aaa\'},{prop1: \'tests\',prop2: \'aaas\'}]"'
+  );
+  const component = vm.$refs.autocomplete;
+  component.search = 'tes'
+  expect(component.filteredEntries.length).to.equal(2)
+  component.search = 'aaa'
+  expect(component.filteredEntries.length).to.equal(2)
+})
 function setup(options) {
   return new Vue({
     template: "<autocomplete " + options + "></autocomplete>",
