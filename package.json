@@ -27,8 +27,7 @@
     "mocha": "mocha --compilers js:babel-core/register",
     "karma": "./node_modules/.bin/karma start karma.conf.js",
     "test": "npm run ci",
-    "ci": "npm run karma -- --single-run",
-    "postinstall": "npm run build"
+    "ci": "npm run karma -- --single-run"    
   },
   "devDependencies": {
     "babel-core": "^6.17.0",
