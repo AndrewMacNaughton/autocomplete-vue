@@ -8,8 +8,6 @@ pids
 *.pid
 *.seed
 
-# Ignore builds
-dist
 
 # Ignore
 
