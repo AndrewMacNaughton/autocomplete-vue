@@ -5,6 +5,7 @@
             width: 100%;
         }
     }
+
     .autocomplete__suggestions {
         position: absolute;
         top: 100%;
@@ -12,12 +13,14 @@
         width: 100%;
         z-index: 2;
     }
+
     .autocomplete__entry {
         &:hover {
             background-color: #f7f7f9;
             cursor: default;
         }
     }
+    
     .autocomplete__selected {
         background-color: darken(#f7f7f9, 5%);
     }
