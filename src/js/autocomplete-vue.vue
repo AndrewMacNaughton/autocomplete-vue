@@ -31,7 +31,7 @@
             @keydown.up.prevent.stop="moveUp()"
             @keydown.enter.prevent.stop="select(selectedIndex)"
             @keydown.tab="mousefocus = false"
-           
+            :value="value"
             ref="input"
             :required="required">
         <div v-if="showSuggestions" :class="classPrefix + '__suggestions'">
