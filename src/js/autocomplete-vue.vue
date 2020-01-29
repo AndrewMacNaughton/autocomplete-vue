@@ -27,23 +27,29 @@
 </style>
 
 <template>
-    <div :class="classPrefix" @mousedown="mousefocus = true" @mouseout="mousefocus = false">
-        <input type="text" @blur="focused = false" @focus="focused = true"
-            v-model="search" :placeholder="placeholder" :class="inputClass"
-            @keydown.down.prevent.stop="moveDown()"
-            @keydown.up.prevent.stop="moveUp()"
-            @keydown.enter.prevent.stop="select(selectedIndex)"
-            @keydown.tab="mousefocus = false"
-            ref="input"
-            :required="required">
-        <div v-if="showSuggestions" :class="classPrefix + '__suggestions'">
-            <div v-for="(entry, index) in filteredEntries"
-                @click="select(index)"
-                :class="[classPrefix + '__entry', selectedClass(index)]">
-                {{ entry[matchedProperty] }}
-            </div>
-        </div>
+  <div :class="classPrefix" @mousedown="mousefocus = true" @mouseout="mousefocus = false">
+    <input
+      type="text"
+      @blur="focused = false"
+      @focus="focused = true"
+      v-model="search"
+      :placeholder="placeholder"
+      :class="inputClass"
+      @keydown.down.prevent.stop="moveDown()"
+      @keydown.up.prevent.stop="moveUp()"
+      @keydown.enter.prevent.stop="select(selectedIndex)"
+      @keydown.tab="select(selectedIndex)"
+      ref="input"
+      :required="required"
+    />
+    <div v-if="showSuggestions" :class="classPrefix + '__suggestions'">
+      <div
+        v-for="(entry, index) in filteredEntries"
+        @click="select(index)"
+        :class="[classPrefix + '__entry', selectedClass(index)]"
+      >{{ entry[matchedProperty] }}</div>
     </div>
+  </div>
 </template>
 <script>
 import { autocompleteBus } from "./autocompleteBus.js";
@@ -56,8 +62,8 @@ export default {
       focused: false,
       mousefocus: false,
       selectedIndex: 0,
-      properties:[],
-      matchedProperty:null
+      properties: [],
+      matchedProperty: null
     };
   },
   computed: {
@@ -65,29 +71,26 @@ export default {
       if (this.search.length <= this.threshold) {
         return [];
       } else {
-        return this.entries.filter(entry => {
-          if (this.ignoreCase) {
-            return (
-              this.properties.find(prop=>{
-                if(entry[prop].toLowerCase().indexOf(this.search.toLowerCase())> -1){
-                  this.matchedProperty = prop
-                  return true 
-                }                
-              })              
-            );
-          }
-                   
-          return (
-            this.properties.find((prop)=>{
-                if(entry[prop].indexOf(this.search)> -1){
-                  this.matchedProperty = prop
-                  return true 
-                }               
-            })
-          )              
-        }).slice(0,this.limit);
-        
-        }      
+        return this.entries
+          .filter(entry => {
+            if (this.ignoreCase) {
+              return this.properties.find(prop => {
+                if (entry[prop].toLowerCase().indexOf(this.search.toLowerCase()) > -1) {
+                  this.matchedProperty = prop;
+                  return true;
+                }
+              });
+            }
+
+            return this.properties.find(prop => {
+              if (entry[prop].indexOf(this.search) > -1) {
+                this.matchedProperty = prop;
+                return true;
+              }
+            });
+          })
+          .slice(0, this.limit);
+      }
     },
     hasSuggestions() {
       if (this.search.length <= this.threshold) {
@@ -116,15 +119,24 @@ export default {
       this.getListAjax();
     }
   },
-  mounted(){
-    this.properties = !Array.isArray(this.property) ? [this.property] : this.property
+  mounted() {
+    this.properties = !Array.isArray(this.property)
+      ? [this.property]
+      : this.property;
   },
   methods: {
     select(index) {
       if (this.hasSuggestions) {
         this.search = this.filteredEntries[index][this.matchedProperty];
-        autocompleteBus.$emit("autocomplete-select", {selected: this.search, fullObject:this.filteredEntries[index]});
-        this.$emit("selected", {selected: this.search, fullObject:this.filteredEntries[index]});
+        autocompleteBus.$emit("autocomplete-select", {
+          selected: this.search,
+          fullObject: this.filteredEntries[0]
+        });
+        this.$emit("selected", {
+          selected: this.search,
+          fullObject: this.filteredEntries[0]
+        });
+        
         if (this.autoHide) {
           this.mousefocus = false;
           this.focused = false;
@@ -137,7 +149,11 @@ export default {
       }
     },
     setEntries(list) {
-      this.entries = list;
+      if (list) {
+        list.then(xx => {
+          this.entries = xx;
+        });
+      }
     },
     moveUp() {
       if (this.selectedIndex - 1 < 0) {
@@ -182,7 +198,7 @@ export default {
       default: "get"
     },
     list: {
-      type: Array,
+      type: Array | Promise,
       required: false
     },
     placeholder: {
@@ -222,9 +238,9 @@ export default {
       required: false,
       default: true
     },
-    limit:{
+    limit: {
       type: Number,
-      required: false      
+      required: false
     }
   },
   watch: {
@@ -238,6 +254,9 @@ export default {
     },
     value(newValue) {
       this.search = newValue;
+    },
+    list(_list) {
+      this.setEntries(_list);
     }
   }
 };
