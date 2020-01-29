@@ -1,4 +1,4 @@
-import Vue from "vue";
+import Vue from "vue"; 
 import AutocompleteVue from "./autocomplete-vue.vue";
 import { autocompleteBus } from "./autocompleteBus.js";
 
