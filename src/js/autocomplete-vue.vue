@@ -30,21 +30,23 @@
   <div :class="classPrefix" @mousedown="mousefocus = true" @mouseout="mousefocus = false">
     <input
       type="text"
-      @blur="focused = false"
-      @focus="focused = true"
+      @change="changeEvent"
+      @blur="focused=false"
+      @focus="focusEvent"
       v-model="search"
       :placeholder="placeholder"
       :class="inputClass"
       @keydown.down.prevent.stop="moveDown()"
       @keydown.up.prevent.stop="moveUp()"
       @keydown.enter.prevent.stop="select(selectedIndex)"
-      @keydown.tab="select(selectedIndex)"
+      @keydown.tab="mousefocus = false"
       ref="input"
       :required="required"
     />
     <div v-if="showSuggestions" :class="classPrefix + '__suggestions'">
       <div
         v-for="(entry, index) in filteredEntries"
+        @mousedown="selected=true"
         @click="select(index)"
         :class="[classPrefix + '__entry', selectedClass(index)]"
       >{{ entry[matchedProperty] }}</div>
@@ -63,7 +65,8 @@ export default {
       mousefocus: false,
       selectedIndex: 0,
       properties: [],
-      matchedProperty: null
+      matchedProperty: null,
+      selected: null
     };
   },
   computed: {
@@ -75,7 +78,10 @@ export default {
           .filter(entry => {
             if (this.ignoreCase) {
               return this.properties.find(prop => {
-                if (entry[prop].toLowerCase().indexOf(this.search.toLowerCase()) > -1) {
+                if (
+                  entry[prop].toLowerCase().indexOf(this.search.toLowerCase()) >
+                  -1
+                ) {
                   this.matchedProperty = prop;
                   return true;
                 }
@@ -126,6 +132,7 @@ export default {
   },
   methods: {
     select(index) {
+      this.selected = true;
       if (this.hasSuggestions) {
         this.search = this.filteredEntries[index][this.matchedProperty];
         autocompleteBus.$emit("autocomplete-select", {
@@ -136,11 +143,13 @@ export default {
           selected: this.search,
           fullObject: this.filteredEntries[0]
         });
-        
+
         if (this.autoHide) {
-          this.mousefocus = false;
-          this.focused = false;
-          this.$refs.input.blur();
+          this.$nextTick(() => {
+            this.mousefocus = false;
+            this.focused = false;
+            this.$refs.input.blur();
+          });
         } else {
           this.$nextTick(() => {
             this.$refs.input.focus();
@@ -150,8 +159,8 @@ export default {
     },
     setEntries(list) {
       if (list) {
-        list.then(xx => {
-          this.entries = xx;
+        list.then(entry => {
+          this.entries = entry;
         });
       }
     },
@@ -173,13 +182,20 @@ export default {
       if (index === this.selectedIndex) {
         return this.classPrefix + "__selected";
       }
-
       return "";
     },
     getListAjax() {
       return this.$http[this.requestType](this.url).then(response => {
         this.setEntries(response.data);
       });
+    },
+    changeEvent() {
+      this.focused = false;
+      if (!this.selected) this.$emit("no-selection");
+    },
+    focusEvent() {
+      this.focused = true;
+      this.selected = false;
     }
   },
   props: {
